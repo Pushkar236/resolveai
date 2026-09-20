@@ -1,0 +1,33 @@
+# Local environment variables and secrets
+.env
+.env.*
+!.env.example
+!.env.sample
+.streamlit/secrets.toml
+
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Local agent skill links into the virtual environment
+/.agents/
+/.claude/
+
+# Python bytecode, caches, and build output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Local logs and operating system files
+*.log
+.DS_Store
+Thumbs.db
