@@ -1,54 +1,194 @@
 import streamlit as st
 
+from agent import SupportAgent
 
-def process_query(query):
-    """Temporary rule to test answering and escalation."""
 
-    if "password" in query.lower():
-        return {
-            "action": "answer",
-            "message": (
-                "To reset your password:\n\n"
-                "1. Open the login page.\n"
-                "2. Select **Forgot password**.\n"
-                "3. Enter your registered email address.\n"
-                "4. Follow the instructions in the reset email."
-            ),
+# --------------------------------------------------
+# Page configuration
+# --------------------------------------------------
+
+st.set_page_config(
+    page_title="CampusHelp - AI Support Assistant",
+    page_icon="🎓",
+    layout="centered"
+)
+
+
+# --------------------------------------------------
+# Styling
+# --------------------------------------------------
+
+st.markdown(
+    """
+    <style>
+        .main {
+            padding-top: 2rem;
         }
 
-    return {
-        "action": "escalate",
-        "message": (
-            "This issue requires human support. "
-            "Ticket creation will be added in a later task."
-        ),
-    }
+        .campus-title {
+            text-align: center;
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+
+        .campus-subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 17px;
+            margin-bottom: 2rem;
+        }
+
+        .result-box {
+            padding: 1.2rem;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            margin-top: 1rem;
+        }
+
+        .ticket-box {
+            padding: 1.2rem;
+            border-radius: 12px;
+            border: 1px solid #f0c36d;
+            background-color: #fff9ed;
+            margin-top: 1rem;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 
-st.title("ResolveAI")
-st.write("Ask a question about the supported product.")
-st.caption("Prototype: responses currently use a temporary keyword rule.")
+# --------------------------------------------------
+# Header
+# --------------------------------------------------
 
-with st.form("support_query"):
-    email = st.text_input("Email address")
-    query = st.text_area("Describe your issue")
-    submitted = st.form_submit_button("Submit")
+st.markdown(
+    '<div class="campus-title">🎓 CampusHelp</div>',
+    unsafe_allow_html=True
+)
 
-if submitted:
-    email = email.strip()
-    query = query.strip()
+st.markdown(
+    '<div class="campus-subtitle">'
+    'AI-powered support for students and learners'
+    '</div>',
+    unsafe_allow_html=True
+)
 
-    if not email or not query:
-        st.error("Please enter your email address and question.")
+
+# --------------------------------------------------
+# Input section
+# --------------------------------------------------
+
+st.subheader("How can we help you?")
+
+user_email = st.text_input(
+    "Email address",
+    placeholder="you@example.com"
+)
+
+user_query = st.text_area(
+    "Describe your issue",
+    placeholder="For example: I forgot my password. How can I reset it?",
+    height=130
+)
+
+submit = st.button(
+    "Submit Request",
+    type="primary",
+    use_container_width=True
+)
+
+
+# --------------------------------------------------
+# Agent processing
+# --------------------------------------------------
+
+if submit:
+
+    if not user_email.strip():
+        st.warning("Please enter your email address.")
+
+    elif not user_query.strip():
+        st.warning("Please describe your issue.")
 
     else:
-        result = process_query(query)
 
-        if result["action"] == "answer":
-            st.success("A demo answer is available.")
-            st.markdown(result["message"])
+        with st.spinner("CampusHelp AI is processing your request..."):
 
-        else:
-            st.warning(result["message"])
-            st.write("**Your issue:**", query)
-            st.write("**Contact email:**", email)
+            try:
+                agent = SupportAgent()
+
+                result = agent.process_query(
+                    user_query.strip(),
+                    user_email=user_email.strip()
+                )
+
+            except Exception as error:
+                st.error(
+                    "Something went wrong while processing your request."
+                )
+
+                st.exception(error)
+
+            else:
+
+                # ------------------------------------------
+                # ANSWER
+                # ------------------------------------------
+
+                if result["decision"] == "ANSWER":
+
+                    st.success("Your question has been answered!")
+
+                    st.markdown(
+                        '<div class="result-box">',
+                        unsafe_allow_html=True
+                    )
+
+                    st.markdown("### 💡 Answer")
+
+                    st.write(result["answer"])
+
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+                    st.markdown("### 📚 Knowledge source")
+
+                    st.write(result["source"])
+
+
+                # ------------------------------------------
+                # ESCALATION
+                # ------------------------------------------
+
+                elif result["decision"] == "ESCALATE":
+
+                    st.warning(
+                        "Your request requires human support."
+                    )
+
+                    st.markdown(
+                        '<div class="ticket-box">',
+                        unsafe_allow_html=True
+                    )
+
+                    st.markdown("### 🎫 Support ticket created")
+
+                    st.write(
+                        f"**Ticket ID:** `{result['ticket_id']}`"
+                    )
+
+                    st.write(
+                        "Your request has been forwarded to our "
+                        "support team for review."
+                    )
+
+                    st.write(
+                        "You will receive the final response by email."
+                    )
+
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+                    st.markdown("### Why was this escalated?")
+
+                    st.write(result["reason"])

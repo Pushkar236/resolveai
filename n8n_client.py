@@ -1,7 +1,7 @@
 import requests
 from datetime import datetime, timezone
 
-N8N_WEBHOOK_URL = "http://localhost:5678/webhook-test/support-ticket"
+N8N_WEBHOOK_URL = "http://localhost:5678/webhook/support-ticket"
 
 
 def create_support_ticket(

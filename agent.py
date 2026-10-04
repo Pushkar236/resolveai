@@ -106,7 +106,7 @@ def main():
 
     result = agent.process_query(
         query,
-        user_email="test@example.com"
+        user_email="kanchan.shendage23@pccoepune.org"
     )
 
     print("\n" + "=" * 60)
