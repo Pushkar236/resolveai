@@ -26,6 +26,8 @@ htmlcov/
 build/
 dist/
 *.egg-info/
+# Local ChromaDB data
+chroma_data/
 
 # Local logs and operating system files
 *.log
